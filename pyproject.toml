@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tconv"
+version = "0.1.0"
+description = "Convert time sheet entries between csv and block formats"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "john-w986" }]
+
+[project.scripts]
+tconv = "tconv.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["tconv*"]
