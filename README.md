@@ -72,6 +72,12 @@ doesn't do timezone conversion, it just moves the text between shapes.
 $ python -m tconv --from csv --to block timesheet.csv
 ```
 
+## Running tests
+
+```
+$ python -m unittest discover
+```
+
 ## Status
 
 Early. No overnight-shift support yet (an entry's `end` must be later than
