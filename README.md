@@ -65,6 +65,8 @@ notes: sprint planning
 `date`, `start`, `end`, and `project` are required; `notes` is optional.
 Times are `HH:MM` in whatever timezone you're already tracking in — tconv
 doesn't do timezone conversion, it just moves the text between shapes.
+If `end` is earlier than `start`, the shift is assumed to run past midnight
+and `end` is read as being on the day after `date`.
 
 ## Running it without installing
 
@@ -80,6 +82,6 @@ $ python -m unittest discover
 
 ## Status
 
-Early. No overnight-shift support yet (an entry's `end` must be later than
-its `start` on the same day) and no rounding or summarization — it's a pure
-reshaping tool for now.
+Early. Shifts that cross midnight are handled (an `end` earlier than `start`
+is read as the next day), but there's no rounding or summarization yet — it's
+a pure reshaping tool for now.

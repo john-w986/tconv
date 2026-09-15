@@ -99,8 +99,12 @@ class HoursTests(unittest.TestCase):
         entry = TimeEntry(date="2026-09-08", start="09:00", end="12:30", project="acme")
         self.assertEqual(entry.hours(), 3.5)
 
-    def test_hours_rejects_end_before_start(self):
-        entry = TimeEntry(date="2026-09-08", start="17:00", end="09:00", project="acme")
+    def test_hours_handles_overnight_shift(self):
+        entry = TimeEntry(date="2026-09-08", start="22:00", end="06:00", project="acme")
+        self.assertEqual(entry.hours(), 8.0)
+
+    def test_hours_rejects_zero_length_shift(self):
+        entry = TimeEntry(date="2026-09-08", start="09:00", end="09:00", project="acme")
         with self.assertRaises(FormatError):
             entry.hours()
 

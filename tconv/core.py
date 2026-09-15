@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 import io
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 
 CSV_FIELDS = ["date", "start", "end", "project", "notes"]
 REQUIRED_FIELDS = ("date", "start", "end", "project")
@@ -25,10 +25,13 @@ class TimeEntry:
         fmt = "%Y-%m-%d %H:%M"
         started = datetime.strptime(f"{self.date} {self.start}", fmt)
         ended = datetime.strptime(f"{self.date} {self.end}", fmt)
-        if ended <= started:
-            # overnight shifts aren't supported yet, so treat this as bad data
+        if ended < started:
+            # end is earlier in the clock than start, so the shift ran past
+            # midnight and end belongs to the following day
+            ended += timedelta(days=1)
+        elif ended == started:
             raise FormatError(
-                f"entry on {self.date} ends at or before it starts "
+                f"entry on {self.date} has a zero-length shift "
                 f"({self.start}-{self.end})"
             )
         return (ended - started).total_seconds() / 3600
