@@ -7,8 +7,10 @@ from tconv.core import (
     TimeEntry,
     parse_block,
     parse_csv,
+    sum_hours_by_project,
     write_block,
     write_csv,
+    write_summary,
 )
 
 SAMPLE_ENTRIES = [
@@ -107,6 +109,33 @@ class HoursTests(unittest.TestCase):
         entry = TimeEntry(date="2026-09-08", start="09:00", end="09:00", project="acme")
         with self.assertRaises(FormatError):
             entry.hours()
+
+
+class SummaryTests(unittest.TestCase):
+    def test_sum_hours_by_project_groups_and_adds(self):
+        totals = sum_hours_by_project(SAMPLE_ENTRIES)
+        self.assertEqual(totals, {"acme": 7.25})
+
+    def test_sum_hours_by_project_keeps_projects_separate(self):
+        entries = [
+            TimeEntry(date="2026-09-08", start="09:00", end="10:00", project="acme"),
+            TimeEntry(date="2026-09-08", start="10:00", end="10:30", project="beta"),
+        ]
+        totals = sum_hours_by_project(entries)
+        self.assertEqual(totals, {"acme": 1.0, "beta": 0.5})
+
+    def test_write_summary_empty_input_gives_empty_string(self):
+        self.assertEqual(write_summary([]), "")
+
+    def test_write_summary_sorts_projects_and_adds_total(self):
+        entries = [
+            TimeEntry(date="2026-09-08", start="09:00", end="10:00", project="zeta"),
+            TimeEntry(date="2026-09-08", start="10:00", end="10:30", project="acme"),
+        ]
+        self.assertEqual(
+            write_summary(entries),
+            "acme: 0.50\nzeta: 1.00\ntotal: 1.50\n",
+        )
 
 
 if __name__ == "__main__":

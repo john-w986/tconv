@@ -45,6 +45,15 @@ Write to a file instead of stdout with `-o`:
 $ tconv --from block --to csv timesheet.txt -o timesheet.csv
 ```
 
+Get total hours per project instead of converting formats, with
+`--sum-by-project` in place of `--to`:
+
+```
+$ tconv --from block --sum-by-project timesheet.txt
+acme: 7.25
+total: 7.25
+```
+
 If you omit the input path (or pass `-` explicitly) tconv reads from stdin,
 so it composes with other tools:
 
@@ -83,5 +92,5 @@ $ python -m unittest discover
 ## Status
 
 Early. Shifts that cross midnight are handled (an `end` earlier than `start`
-is read as the next day), but there's no rounding or summarization yet — it's
-a pure reshaping tool for now.
+is read as the next day) and `--sum-by-project` gives per-project totals, but
+there's no rounding yet.

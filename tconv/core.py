@@ -128,6 +128,22 @@ def parse_block(text: str) -> list[TimeEntry]:
     return entries
 
 
+def sum_hours_by_project(entries: list[TimeEntry]) -> dict[str, float]:
+    totals: dict[str, float] = {}
+    for entry in entries:
+        totals[entry.project] = totals.get(entry.project, 0.0) + entry.hours()
+    return totals
+
+
+def write_summary(entries: list[TimeEntry]) -> str:
+    totals = sum_hours_by_project(entries)
+    if not totals:
+        return ""
+    lines = [f"{project}: {hours:.2f}" for project, hours in sorted(totals.items())]
+    lines.append(f"total: {sum(totals.values()):.2f}")
+    return "\n".join(lines) + "\n"
+
+
 def write_block(entries: list[TimeEntry]) -> str:
     stanzas = []
     for entry in entries:

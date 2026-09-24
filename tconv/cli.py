@@ -3,7 +3,14 @@ from __future__ import annotations
 import argparse
 import sys
 
-from .core import FormatError, parse_block, parse_csv, write_block, write_csv
+from .core import (
+    FormatError,
+    parse_block,
+    parse_csv,
+    write_block,
+    write_csv,
+    write_summary,
+)
 
 READERS = {"csv": parse_csv, "block": parse_block}
 WRITERS = {"csv": write_csv, "block": write_block}
@@ -31,8 +38,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--to",
         dest="to_format",
         choices=sorted(WRITERS),
-        required=True,
         help="format to convert to",
+    )
+    parser.add_argument(
+        "--sum-by-project",
+        action="store_true",
+        help="print total hours per project instead of converting formats",
     )
     parser.add_argument(
         "-o",
@@ -62,10 +73,18 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
+    if args.sum_by_project and args.to_format:
+        parser.error("--to and --sum-by-project are mutually exclusive")
+    if not args.sum_by_project and not args.to_format:
+        parser.error("one of --to or --sum-by-project is required")
+
     try:
         text = read_input(args.input)
         entries = READERS[args.from_format](text)
-        output = WRITERS[args.to_format](entries)
+        if args.sum_by_project:
+            output = write_summary(entries)
+        else:
+            output = WRITERS[args.to_format](entries)
     except FormatError as exc:
         print(f"tconv: {exc}", file=sys.stderr)
         return 1
