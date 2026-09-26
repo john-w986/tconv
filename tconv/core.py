@@ -128,15 +128,30 @@ def parse_block(text: str) -> list[TimeEntry]:
     return entries
 
 
-def sum_hours_by_project(entries: list[TimeEntry]) -> dict[str, float]:
+def round_hours(hours: float, increment: float = 0.25) -> float:
+    """Round a duration to the nearest increment (default: quarter hour).
+
+    Rounding happens per entry, before totals are added up, so a project's
+    total is the sum of what would show up on separate timesheet lines
+    rather than a round of the grand total.
+    """
+    return round(hours / increment) * increment
+
+
+def sum_hours_by_project(
+    entries: list[TimeEntry], round_quarter: bool = False
+) -> dict[str, float]:
     totals: dict[str, float] = {}
     for entry in entries:
-        totals[entry.project] = totals.get(entry.project, 0.0) + entry.hours()
+        hours = entry.hours()
+        if round_quarter:
+            hours = round_hours(hours)
+        totals[entry.project] = totals.get(entry.project, 0.0) + hours
     return totals
 
 
-def write_summary(entries: list[TimeEntry]) -> str:
-    totals = sum_hours_by_project(entries)
+def write_summary(entries: list[TimeEntry], round_quarter: bool = False) -> str:
+    totals = sum_hours_by_project(entries, round_quarter=round_quarter)
     if not totals:
         return ""
     lines = [f"{project}: {hours:.2f}" for project, hours in sorted(totals.items())]

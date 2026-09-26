@@ -46,6 +46,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="print total hours per project instead of converting formats",
     )
     parser.add_argument(
+        "--round-quarter",
+        action="store_true",
+        help="round each entry to the nearest quarter hour before summing "
+        "(only valid with --sum-by-project)",
+    )
+    parser.add_argument(
         "-o",
         "--output",
         default="-",
@@ -77,12 +83,14 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--to and --sum-by-project are mutually exclusive")
     if not args.sum_by_project and not args.to_format:
         parser.error("one of --to or --sum-by-project is required")
+    if args.round_quarter and not args.sum_by_project:
+        parser.error("--round-quarter requires --sum-by-project")
 
     try:
         text = read_input(args.input)
         entries = READERS[args.from_format](text)
         if args.sum_by_project:
-            output = write_summary(entries)
+            output = write_summary(entries, round_quarter=args.round_quarter)
         else:
             output = WRITERS[args.to_format](entries)
     except FormatError as exc:

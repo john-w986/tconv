@@ -7,6 +7,7 @@ from tconv.core import (
     TimeEntry,
     parse_block,
     parse_csv,
+    round_hours,
     sum_hours_by_project,
     write_block,
     write_csv,
@@ -135,6 +136,37 @@ class SummaryTests(unittest.TestCase):
         self.assertEqual(
             write_summary(entries),
             "acme: 0.50\nzeta: 1.00\ntotal: 1.50\n",
+        )
+
+
+class RoundHoursTests(unittest.TestCase):
+    def test_round_hours_rounds_to_nearest_quarter(self):
+        self.assertEqual(round_hours(1.1), 1.0)
+        self.assertEqual(round_hours(1.2), 1.25)
+        self.assertEqual(round_hours(1.4), 1.5)
+
+    def test_round_hours_custom_increment(self):
+        self.assertEqual(round_hours(1.2, increment=0.5), 1.0)
+        self.assertEqual(round_hours(1.3, increment=0.5), 1.5)
+
+    def test_sum_hours_by_project_rounds_per_entry_before_adding(self):
+        entries = [
+            TimeEntry(date="2026-09-08", start="09:00", end="09:52", project="acme"),
+            TimeEntry(date="2026-09-08", start="10:00", end="10:52", project="acme"),
+        ]
+        # each entry is 0.8667h, rounds to 0.75h alone; unrounded total would
+        # be 1.7333h which rounds to 1.75h, so per-entry rounding must be
+        # taking effect rather than rounding the combined total
+        totals = sum_hours_by_project(entries, round_quarter=True)
+        self.assertEqual(totals, {"acme": 1.5})
+
+    def test_write_summary_round_quarter(self):
+        entries = [
+            TimeEntry(date="2026-09-08", start="09:00", end="09:52", project="acme"),
+        ]
+        self.assertEqual(
+            write_summary(entries, round_quarter=True),
+            "acme: 0.75\ntotal: 0.75\n",
         )
 
 

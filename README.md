@@ -54,6 +54,15 @@ acme: 7.25
 total: 7.25
 ```
 
+Add `--round-quarter` to round each entry to the nearest quarter hour before
+it's added to the total (only valid together with `--sum-by-project`):
+
+```
+$ tconv --from block --sum-by-project --round-quarter timesheet.txt
+acme: 7.25
+total: 7.25
+```
+
 If you omit the input path (or pass `-` explicitly) tconv reads from stdin,
 so it composes with other tools:
 
@@ -92,5 +101,6 @@ $ python -m unittest discover
 ## Status
 
 Early. Shifts that cross midnight are handled (an `end` earlier than `start`
-is read as the next day) and `--sum-by-project` gives per-project totals, but
-there's no rounding yet.
+is read as the next day), `--sum-by-project` gives per-project totals, and
+`--round-quarter` rounds entries to the nearest quarter hour. No project
+allowlist yet, and no standalone script for use without installing.
