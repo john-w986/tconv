@@ -5,6 +5,8 @@ import sys
 
 from .core import (
     FormatError,
+    check_projects,
+    parse_allowlist,
     parse_block,
     parse_csv,
     write_block,
@@ -52,6 +54,11 @@ def build_parser() -> argparse.ArgumentParser:
         "(only valid with --sum-by-project)",
     )
     parser.add_argument(
+        "--projects-file",
+        help="file listing allowed project names, one per line; entries "
+        "with any other project are rejected",
+    )
+    parser.add_argument(
         "-o",
         "--output",
         default="-",
@@ -89,6 +96,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         text = read_input(args.input)
         entries = READERS[args.from_format](text)
+        if args.projects_file:
+            allowed = parse_allowlist(read_input(args.projects_file))
+            check_projects(entries, allowed)
         if args.sum_by_project:
             output = write_summary(entries, round_quarter=args.round_quarter)
         else:

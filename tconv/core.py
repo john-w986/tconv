@@ -128,6 +128,27 @@ def parse_block(text: str) -> list[TimeEntry]:
     return entries
 
 
+def parse_allowlist(text: str) -> set[str]:
+    """One project name per line; blank lines and '#' comments are ignored."""
+    allowed = set()
+    for raw_line in text.splitlines():
+        name = raw_line.partition("#")[0].strip()
+        if name:
+            allowed.add(name)
+    return allowed
+
+
+def check_projects(entries: list[TimeEntry], allowed: set[str]) -> None:
+    """Raise FormatError listing every project not in the allowlist.
+
+    Collects all offenders rather than stopping at the first, so a typo-ridden
+    log can be fixed in one pass.
+    """
+    unknown = sorted({e.project for e in entries if e.project not in allowed})
+    if unknown:
+        raise FormatError(f"project(s) not in allowlist: {', '.join(unknown)}")
+
+
 def round_hours(hours: float, increment: float = 0.25) -> float:
     """Round a duration to the nearest increment (default: quarter hour).
 

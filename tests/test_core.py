@@ -5,6 +5,8 @@ import unittest
 from tconv.core import (
     FormatError,
     TimeEntry,
+    check_projects,
+    parse_allowlist,
     parse_block,
     parse_csv,
     round_hours,
@@ -168,6 +170,25 @@ class RoundHoursTests(unittest.TestCase):
             write_summary(entries, round_quarter=True),
             "acme: 0.75\ntotal: 0.75\n",
         )
+
+
+class AllowlistTests(unittest.TestCase):
+    def test_parse_allowlist_skips_blanks_and_comments(self):
+        text = "# clients\nacme\n\n  beta  # internal\n"
+        self.assertEqual(parse_allowlist(text), {"acme", "beta"})
+
+    def test_check_projects_accepts_listed_projects(self):
+        check_projects(SAMPLE_ENTRIES, {"acme"})
+
+    def test_check_projects_reports_all_unknown_projects(self):
+        entries = [
+            TimeEntry(date="2026-09-08", start="09:00", end="10:00", project="zeta"),
+            TimeEntry(date="2026-09-08", start="10:00", end="11:00", project="acem"),
+            TimeEntry(date="2026-09-08", start="11:00", end="12:00", project="acme"),
+        ]
+        with self.assertRaises(FormatError) as ctx:
+            check_projects(entries, {"acme"})
+        self.assertIn("acem, zeta", str(ctx.exception))
 
 
 if __name__ == "__main__":

@@ -63,6 +63,16 @@ acme: 7.25
 total: 7.25
 ```
 
+Catch typos in project names by passing `--projects-file` with a list of
+allowed names, one per line (blank lines and `#` comments are ignored).
+Names are matched exactly, and tconv exits with an error naming every project
+that isn't in the list:
+
+```
+$ tconv --from block --to csv --projects-file projects.txt timesheet.txt
+tconv: project(s) not in allowlist: acem
+```
+
 If you omit the input path (or pass `-` explicitly) tconv reads from stdin,
 so it composes with other tools:
 
@@ -102,5 +112,6 @@ $ python -m unittest discover
 
 Early. Shifts that cross midnight are handled (an `end` earlier than `start`
 is read as the next day), `--sum-by-project` gives per-project totals, and
-`--round-quarter` rounds entries to the nearest quarter hour. No project
-allowlist yet, and no standalone script for use without installing.
+`--round-quarter` rounds entries to the nearest quarter hour, and
+`--projects-file` checks project names against an allowlist. No standalone
+script for use without installing yet.
